@@ -1,0 +1,33 @@
+version: '3.8'
+networks:
+  backend:
+    name: "${COMPOSE_PROJECT_NAME}"
+services:
+  notebook:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    image: mynotebook
+    container_name: "${COMPOSE_PROJECT_NAME}.notebook"
+    command:
+      - start-notebook.sh
+      - --NotebookApp.token='' # 認証を無効化
+      - --NotebookApp.disable_check_xsrf=True # CSRFチェックを無効化
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebook:/home/jovyan/work
+    networks:
+      - "backend"
+  db:
+    container_name: "${COMPOSE_PROJECT_NAME}.pgsql"
+    image: ankane/pgvector
+    environment:
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: app
+      TZ: "Asia/Tokyo"
+    ports:
+      - "5432:5432"
+    networks:
+        - backend
